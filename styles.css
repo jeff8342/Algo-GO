@@ -1,0 +1,12 @@
+/* styles.css */
+
+#flowchartContainer {
+    float: left;
+    width: 50%;
+}
+
+#codeContainer {
+    float: right;
+    width: 50%;
+    
+}

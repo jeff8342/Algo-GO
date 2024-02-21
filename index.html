@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fais ton algorigramme</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.3.0/raphael.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowchart/1.18.0/flowchart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/1.5/canvg.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/1.5/rgbcolor.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body onload="applyChanges()">
+
+    <div id="flowchartContainer">
+        <div id="flowchart"></div>
+    </div>
+    <h3>Vous pouvez construire votre algorigramme ici (<a href="Tutoriel.md">documentation</a>)</h3>
+    <textarea id="code" rows="30" cols="50">
+st=>start: Début
+op1=>operation: Action
+cond1=>condition: Question ?
+op2=>operation: Action 2
+e=>end: Fin
+                
+st->op1->cond1
+cond1(yes)->op2->e
+cond1(no)->cond1
+    </textarea>
+    <br>
+    <button onclick="addElement('start')">Ajouter Début</button>
+    <button onclick="addElement('operation')">Ajouter une Action</button>
+    <button onclick="addElement('condition')">Ajouter une Condition</button>
+    <button onclick="addElement('end')">Ajouter Fin</button>
+    <br>
+    <button onclick="applyChanges()"><strong>Appliquer les modifications</strong></button>
+    <button onclick="exportDiagram()">Exporter en image</button>
+    <input type="file" id="directoryPicker" style="display: none;" webkitdirectory multiple>
+
+    <script>
+        var diagram = null;
+        var codeTextArea = document.getElementById('code');
+
+        function addElement(type) {
+            var startPosition = codeTextArea.selectionStart;
+            var endPosition = codeTextArea.selectionEnd;
+            var code = codeTextArea.value;
+            var elementText = '';
+
+            switch (type) {
+                case 'start':
+                    elementText = 'st=>start: Début';
+                    break;
+                case 'operation':
+                    elementText = 'op=>operation: Action';
+                    break;
+                case 'condition':
+                    elementText = 'cond=>condition: Condition';
+                    break;
+                case 'end':
+                    elementText = 'e=>end: Fin';
+                    break;
+                default:
+                    break;
+            }
+
+            var newCode = code.slice(0, startPosition) + '\n' + elementText + '\n' + code.slice(endPosition);
+            codeTextArea.value = newCode;
+        }
+
+        function applyChanges() {
+            var code = codeTextArea.value;
+            var flowchartContainer = document.getElementById('flowchartContainer');
+            
+            // Supprimer le diagramme existant s'il y en a un
+            while (flowchartContainer.firstChild) {
+                flowchartContainer.removeChild(flowchartContainer.firstChild);
+            }
+            
+            // Créer un nouveau div pour le diagramme
+            var newFlowchartDiv = document.createElement('div');
+            newFlowchartDiv.id = 'flowchart';
+            flowchartContainer.appendChild(newFlowchartDiv);
+            
+            // Dessiner le nouveau diagramme
+            diagram = flowchart.parse(code);
+            diagram.drawSVG('flowchart', {
+                'line-width': 2,
+                'line-length': 50,
+                'text-margin': 10,
+                'font-size': 14,
+                'font-color': 'black',
+                'line-color': 'black',
+                'element-color': 'black',
+                'fill': 'white',
+                'yes-text': 'Oui',
+                'no-text': 'Non',
+                'arrow-end': 'block',
+                'scale': 1,
+                // style symbol types
+                'symbols': {
+                    'start': {
+                        'font-color': 'red',
+                        'element-color': 'green',
+                        'fill': 'yellow'
+                    },
+                    'end': {
+                        'class': 'end-element'
+                    }
+                },
+                // even flowstate support ;-)
+                'flowstate': {
+                    // 'past': { 'fill': '#CCCCCC', 'font-size': 12},
+                    // 'current': {'fill': 'yellow', 'font-color': 'red', 'font-weight': 'bold'},
+                    // 'future': { 'fill': '#FFFF99'},
+                    'request': { 'fill': 'blue'}//,
+                    // 'invalid': { 'fill': '#444444'},
+                    // 'approved': { 'fill': '#58C4A3'},
+                    // 'rejected': { 'fill': '#C45879'}
+                }
+            });
+        }
+
+        function exportDiagram() {
+            var svg = document.getElementById('flowchart').innerHTML;
+            
+            // Créer un canevas pour le rendu SVG
+            var canvas = document.createElement('canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Utiliser canvg pour rendre le SVG sur le canevas
+            canvg(canvas, svg);
+            
+            // Obtenir l'URL de l'image à partir du canevas
+            var imgURL = canvas.toDataURL('image/png');
+            
+            // Créer un lien de téléchargement pour l'image
+            var link = document.createElement('a');
+            link.download = 'diagramme.png';
+            link.href = imgURL;
+            
+            // Simuler un clic sur le lien pour télécharger l'image
+            link.click();
+        }
+    </script>
+
+</body>
+</html>
+Jean-Francois Simon
+@jeff8324
